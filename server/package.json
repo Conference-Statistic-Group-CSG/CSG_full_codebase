@@ -4,8 +4,8 @@
   "description": "This program is coded for the Lytti company",
   "main": "index.js",
   "scripts": {
-    "initializatioin": "npm i express nodemon cors body-parser",
-    "start": "nodemon server.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js"
   },
   "author": "",
   "license": "ISC",
