@@ -6,7 +6,7 @@ After cloning the project:
 Go to the server Folder: 
 
     1.npm install  (in odrer to install necessary packages)
-    2.nodemon server.js (works by me, npm start does not work) npm start (It should run on Port 5000. Look at your teminal you should see Server is runnig on this 5000)
+    2.nodemon server.js (works by me, npm start does not work). It should run on url localhost:5000/ping
 
 
 Go to the client Folder 
