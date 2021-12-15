@@ -1,7 +1,7 @@
 Hello Guys: 
 
 
-After cloning the prject: 
+After cloning the project: 
 
 Go to the server Folder: 
 
