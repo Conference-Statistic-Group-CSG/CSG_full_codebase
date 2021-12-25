@@ -1,0 +1,10 @@
+purpose: start to use Zoom API
+impediments: authorization needed
+questions: 
+1. how to get access token for Zoom API? 
+ -- how to pass authorization
+ -- what kind of authentication needed before authorization?
+2. how to write backend code, which gets access token and has access to APIs? 
+ -- is backend code the only way of getting access token and pass authorization
+ -- what are obligatory parts of a such backend code?
+3. how to use Zoom APIs by Postman app?
