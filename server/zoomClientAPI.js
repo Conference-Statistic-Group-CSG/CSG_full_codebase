@@ -61,18 +61,8 @@ app.get("/", function (req, res) {
 });
 
 app.get("/authorize", function (req, res) {
-  access_token = null;
-  refresh_token = null;
-  scope = null;
-  state = randomstring.generate();
-
-  var authorizeUrl = buildUrl(authServer.authorizationEndpoint, {
-    response_type: "code",
-    scope: client.scope,
-    client_id: client.client_id,
-    redirect_uri: client.redirect_uris[0],
-    state: state,
-  });
+  var authorizeUrl =
+    "https://zoom.us/oauth/authorize?response_type=code&client_id=KFq1iYwHTFeJQEx1Aaa_dw&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2Fcallback";
 
   console.log("redirect", authorizeUrl);
   res.redirect(authorizeUrl);
