@@ -35,11 +35,12 @@ var rsaKey = {
 };
 
 // client information
+// https://zoom.us/oauth/authorize?response_type=code&client_id=KFq1iYwHTFeJQEx1Aaa_dw&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2Fcallback
 
 var client = {
-  client_id: "globomantics-client-1",
-  client_secret: "globomantics-client-secret-1",
-  redirect_uris: ["http://localhost:9000/callback"],
+  client_id: "KFq1iYwHTFeJQEx1Aaa_dw",
+  client_secret: "WD2mwUfJQkWMcStDm7K7X5oT2SN7lX5k",
+  redirect_uris: ["http://localhost:5000/callback"],
   scope: "visits membershipTime averageWorkoutLength",
 };
 
