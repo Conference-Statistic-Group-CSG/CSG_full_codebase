@@ -22,16 +22,8 @@ app.set("views", "files/client");
 
 // authorization server information
 var authServer = {
-  authorizationEndpoint: "http://localhost:9003/authorize",
-  tokenEndpoint: "http://localhost:9003/token",
-};
-
-var rsaKey = {
-  alg: "RS256",
-  e: "AQAB",
-  n: "p8eP5gL1H_H9UNzCuQS-vNRVz3NWxZTHYk1tG9VpkfFjWNKG3MFTNZJ1l5g_COMm2_2i_YhQNH8MJ_nQ4exKMXrWJB4tyVZohovUxfw-eLgu1XQ8oYcVYW8ym6Um-BkqwwWL6CXZ70X81YyIMrnsGTyTV6M8gBPun8g2L8KbDbXR1lDfOOWiZ2ss1CRLrmNM-GRp3Gj-ECG7_3Nx9n_s5to2ZtwJ1GS1maGjrSZ9GRAYLrHhndrL_8ie_9DS2T-ML7QNQtNkg2RvLv4f0dpjRYI23djxVtAylYK4oiT_uEMgSkc4dxwKwGuBxSO0g9JOobgfy0--FUHHYtRi0dOFZw",
-  kty: "RSA",
-  kid: "authserver",
+  authorizationEndpoint: "https://zoom.us/oauth/authorize",
+  tokenEndpoint: "https://zoom.us/oauth/",
 };
 
 // client information
@@ -40,8 +32,7 @@ var rsaKey = {
 var client = {
   client_id: "KFq1iYwHTFeJQEx1Aaa_dw",
   client_secret: "WD2mwUfJQkWMcStDm7K7X5oT2SN7lX5k",
-  redirect_uris: ["http://localhost:5000/callback"],
-  scope: "visits membershipTime averageWorkoutLength",
+  redirect_uris: ["http://localhost:9000/callback"],
 };
 
 var carvedRockGymApi = "http://localhost:9002/gymStats";
@@ -62,7 +53,7 @@ app.get("/", function (req, res) {
 
 app.get("/authorize", function (req, res) {
   var authorizeUrl =
-    "https://zoom.us/oauth/authorize?response_type=code&client_id=KFq1iYwHTFeJQEx1Aaa_dw&redirect_uri=http%3A%2F%2Flocalhost%3A5000%2Fcallback";
+    "https://zoom.us/oauth/authorize?response_type=code&client_id=KFq1iYwHTFeJQEx1Aaa_dw&redirect_uri=http%3A%2F%2Flocalhost%3A9000%2Fcallback";
 
   console.log("redirect", authorizeUrl);
   res.redirect(authorizeUrl);
@@ -75,14 +66,6 @@ app.get("/callback", function (req, res) {
     return;
   }
 
-  var resState = req.query.state;
-  if (resState == state) {
-    console.log("State value matches: expected %s got %s", state, resState);
-  } else {
-    console.log("State DOES NOT MATCH: expected %s got %s", state, resState);
-    res.render("error", { error: "State value did not match" });
-    return;
-  }
 
   var code = req.query.code;
 
@@ -173,102 +156,7 @@ app.get("/callback", function (req, res) {
   }
 });
 
-var refreshAccessToken = function (req, res) {
-  var form_data = qs.stringify({
-    grant_type: "refresh_token",
-    refresh_token: refresh_token,
-    client_id: client.client_id,
-    client_secret: client.client_secret,
-    redirect_uri: client.redirect_uri,
-  });
-  var headers = {
-    "Content-Type": "application/x-www-form-urlencoded",
-  };
-  console.log("Refreshing token %s", refresh_token);
-  var tokRes = request("POST", authServer.tokenEndpoint, {
-    body: form_data,
-    headers: headers,
-  });
-  if (tokRes.statusCode >= 200 && tokRes.statusCode < 300) {
-    var body = JSON.parse(tokRes.getBody());
-
-    access_token = body.access_token;
-    console.log("Got access token: %s", access_token);
-    if (body.refresh_token) {
-      refresh_token = body.refresh_token;
-      console.log("Got refresh token: %s", refresh_token);
-    }
-    scope = body.scope;
-    console.log("Got scope: %s", scope);
-
-    // try again
-    res.redirect("/gymStats");
-    return;
-  } else {
-    console.log("No refresh token, asking the user to get a new access token");
-    // tell the user to get a new access token
-    res.redirect("/authorize");
-    return;
-  }
-};
-
-app.get("/gymStats", function (req, res) {
-  if (!access_token) {
-    if (refresh_token) {
-      // try to refresh and start again
-      refreshAccessToken(req, res);
-      return;
-    } else {
-      res.render("error", { error: "Missing access token." });
-      return;
-    }
-  }
-
-  console.log("Making request with access token %s", access_token);
-
-  var headers = {
-    Authorization: "Bearer " + access_token,
-    "Content-Type": "application/x-www-form-urlencoded",
-  };
-
-  var resource = request("GET", carvedRockGymApi, { headers: headers });
-
-  if (resource.statusCode >= 200 && resource.statusCode < 300) {
-    var body = JSON.parse(resource.getBody());
-    res.render("gymStats", { scope: scope, data: body });
-    return;
-  } else {
-    access_token = null;
-    if (refresh_token) {
-      // try to refresh and start again
-      refreshAccessToken(req, res);
-      return;
-    } else {
-      res.render("error", {
-        error: "Server returned response code: " + resource.statusCode,
-      });
-      return;
-    }
-  }
-});
-
 app.use("/", express.static("files/client"));
-
-var buildUrl = function (base, options, hash) {
-  var newUrl = url.parse(base, true);
-  delete newUrl.search;
-  if (!newUrl.query) {
-    newUrl.query = {};
-  }
-  __.each(options, function (value, key, list) {
-    newUrl.query[key] = value;
-  });
-  if (hash) {
-    newUrl.hash = hash;
-  }
-
-  return url.format(newUrl);
-};
 
 var server = app.listen(9000, "localhost", function () {
   var host = server.address().address;
