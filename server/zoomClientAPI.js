@@ -44,11 +44,7 @@ var refresh_token = null;
 var scope = null;
 
 app.get("/", function (req, res) {
-  res.render("index", {
-    access_token: access_token,
-    refresh_token: refresh_token,
-    scope: scope,
-  });
+  res.render("index");
 });
 
 app.get("/authorize", function (req, res) {
@@ -65,8 +61,7 @@ app.get("/callback", function (req, res) {
     res.render("error", { error: req.query.error });
     return;
   }
-
-
+  console.log("here we R");
   var code = req.query.code;
 
   var form_data = qs.stringify({
@@ -97,56 +92,9 @@ app.get("/callback", function (req, res) {
 
     access_token = body.access_token;
     console.log("Got access token: %s", access_token);
-    if (body.refresh_token) {
-      refresh_token = body.refresh_token;
-      console.log("Got refresh token: %s", refresh_token);
-    }
-
-    if (body.access_token) {
-      console.log("Got access token: %s", body.access_token);
-
-      // check the access token
-      var pubKey = jose.KEYUTIL.getKey(rsaKey);
-      var signatureValid = jose.jws.JWS.verify(body.access_token, pubKey, [
-        "RS256",
-      ]);
-      if (signatureValid) {
-        console.log("Signature validated.");
-        var tokenParts = body.access_token.split(".");
-        var payload = JSON.parse(base64url.decode(tokenParts[1]));
-        console.log("Payload", payload);
-        if (payload.iss == "http://localhost:9003/") {
-          console.log("issuer OK");
-          // TODO: this is incorrect. Fix the video and the code
-          if (
-            (Array.isArray(payload.aud) &&
-              _.contains(payload.aud, "http://localhost:9002/")) ||
-            payload.aud == "http://localhost:9002/"
-          ) {
-            console.log("Audience OK");
-
-            var now = Math.floor(Date.now() / 1000);
-
-            if (payload.iat <= now) {
-              console.log("issued-at OK");
-              if (payload.exp >= now) {
-                console.log("expiration OK");
-
-                console.log("Token valid!");
-              }
-            }
-          }
-        }
-      }
-    }
-
-    scope = body.scope;
-    console.log("Got scope: %s", scope);
 
     res.render("index", {
       access_token: access_token,
-      refresh_token: refresh_token,
-      scope: scope,
     });
   } else {
     res.render("error", {
